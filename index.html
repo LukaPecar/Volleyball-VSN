@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volley Sempach-Neuenkirch | Gemeinsam am Netz</title>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --gold: #d4a843;
+            --gold-light: #e8c76a;
+            --gold-dark: #b8922e;
+            --bg: #0b0f14;
+            --bg-alt: #101820;
+            --bg-card: #141c26;
+            --bg-card-hover: #1a2535;
+            --text: #ffffff;
+            --text-dim: #8a9bb5;
+            --text-muted: #4a5a70;
+            --border: rgba(212, 168, 67, 0.12);
+            --border-hover: rgba(212, 168, 67, 0.3);
+            --glow: rgba(212, 168, 67, 0.15);
+            --glow-strong: rgba(212, 168, 67, 0.4);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* ===== CUSTOM CURSOR ===== */
+        .cursor {
+            position: fixed; width: 20px; height: 20px;
+            border: 2px solid var(--gold); border-radius: 50%;
+            pointer-events: none; z-index: 9999;
+            transition: transform 0.15s ease, width 0.3s, height 0.3s, border-color 0.3s;
+            transform: translate(-50%, -50%); mix-blend-mode: difference;
+        }
+        .cursor-dot {
+            position: fixed; width: 5px; height: 5px;
+            background: var(--gold); border-radius: 50%;
+            pointer-events: none; z-index: 9999;
+            transform: translate(-50%, -50%); transition: transform 0.05s;
+        }
+        .cursor.hover {
+            width: 50px; height: 50px;
+            border-color: var(--gold-light);
+            background: rgba(212, 168, 67, 0.08);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+
+        /* ===== SCROLL PROGRESS ===== */
+        .scroll-progress {
+            position: fixed; top: 0; left: 0; height: 3px;
+            background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light));
+            z-index: 10000; transition: width 0.1s linear;
+            box-shadow: 0 0 10px var(--glow-strong);
+        }
+
+        /* ===== PRELOADER ===== */
+        .preloader {
+            position: fixed; inset: 0; background: var(--bg); z-index: 99999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.6s ease, visibility 0.6s;
+        }
+        .preloader.hidden { opacity: 0; visibility: hidden; }
+        .preloader-ball {
+            width: 60px; height: 60px; border-radius: 50%;
+            border: 3px solid var(--gold); position: relative;
+            animation: preloaderSpin 1.2s ease-in-out infinite;
+        }
+        .preloader-ball::before, .preloader-ball::after {
+            content: ''; position: absolute; top: 50%;
+            left: -5px; right: -5px; height: 2px;
+            background: var(--gold); border-radius: 50%;
+        }
+        .preloader-ball::before { transform: rotate(-30deg); }
+        .preloader-ball::after { transform: rotate(30deg); }
+        @keyframes preloaderSpin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        .preloader-text {
+            margin-top: 2rem; color: var(--gold); font-size: 0.8rem;
+            letter-spacing: 6px; text-transform: uppercase;
+            animation: preloaderFade 1.2s ease-in-out infinite;
+        }
+        @keyframes preloaderFade { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 1.2rem 3rem; display: flex;
+            justify-content: space-between; align-items: center;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .navbar.scrolled {
+            background: rgba(11, 15, 20, 0.92);
+            backdrop-filter: blur(30px) saturate(1.5);
+            padding: 0.8rem 3rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-brand {
+            display: flex; align-items: center; gap: 0.8rem;
+            text-decoration: none; color: var(--text);
+        }
+        .nav-brand-mark {
+            width: 42px; height: 42px; border-radius: 10px;
+            border: 2px solid var(--gold);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 0.9rem; color: var(--gold);
+            transition: all 0.4s; position: relative; overflow: hidden;
+        }
+        .nav-brand-mark::before {
+            content: ''; position: absolute; inset: 0;
+            background: var(--gold);
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-brand:hover .nav-brand-mark::before { transform: translateY(0); }
+        .nav-brand:hover .nav-brand-mark { color: var(--bg); }
+        .nav-brand-mark span { position: relative; z-index: 1; }
+        .nav-brand-name { font-weight: 800; font-size: 1rem; letter-spacing: -0.3px; }
+        .nav-brand-name .gold { color: var(--gold); }
+
+        .nav-menu {
+            display: flex; gap: 0.5rem; list-style: none; align-items: center;
+        }
+        .nav-menu a {
+            color: var(--text-dim); text-decoration: none;
+            font-size: 0.85rem; font-weight: 600;
+            padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s;
+        }
+        .nav-menu a:hover { color: var(--text); background: rgba(212, 168, 67, 0.06); }
+        .nav-menu .nav-cta-btn {
+            background: var(--gold); color: var(--bg) !important;
+            padding: 0.55rem 1.3rem; border-radius: 8px; font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-menu .nav-cta-btn:hover {
+            background: var(--gold-light); transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212, 168, 67, 0.3);
+        }
+        .mobile-toggle {
+            display: none; background: none; border: 1px solid var(--border);
+            color: var(--gold); width: 44px; height: 44px; border-radius: 10px;
+            cursor: pointer; font-size: 1.3rem; transition: all 0.3s;
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden; padding: 6rem 2rem 2rem;
+        }
+
+        .hero-image {
+            position: absolute; inset: 0; z-index: 0;
+            background: url('hero.jpg') center 30% / cover no-repeat;
+        }
+        .hero-image::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(11, 15, 20, 0.5) 0%,
+                rgba(11, 15, 20, 0.6) 40%,
+                rgba(11, 15, 20, 0.85) 75%,
+                rgba(11, 15, 20, 1) 100%
+            );
+        }
+
+        .hero-content {
+            position: relative; z-index: 2; text-align: center; max-width: 950px;
+        }
+
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.6rem;
+            background: rgba(212, 168, 67, 0.1);
+            border: 1px solid rgba(212, 168, 67, 0.25);
+            border-radius: 100px; padding: 0.5rem 1.4rem;
+            font-size: 0.8rem; font-weight: 700; color: var(--gold);
+            text-transform: uppercase; letter-spacing: 2px;
+            margin-bottom: 2.5rem; position: relative; overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        .hero-badge::before {
+            content: ''; position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 168, 67, 0.2), transparent);
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer { 0% { left: -100%; } 100% { left: 200%; } }
+        .hero-badge .live-dot {
+            width: 7px; height: 7px; background: var(--gold); border-radius: 50%;
+            animation: livePulse 1.5s ease-in-out infinite;
+        }
+        @keyframes livePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(212, 168, 67, 0.6); }
+            50% { box-shadow: 0 0 0 6px rgba(212, 168, 67, 0); }
+        }
+
+        .gold-text { color: var(--gold); }
+
+        .hero-title {
+            font-size: clamp(2.2rem, 6.5vw, 5.5rem); font-weight: 900;
+            line-height: 1.0; letter-spacing: -3px; margin-bottom: 2rem;
+            text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+            white-space: nowrap;
+        }
+        .hero-title .word { display: inline-block; overflow: hidden; vertical-align: bottom; }
+        .hero-title .word .char {
+            display: inline-block; transform: translateY(120%);
+            animation: charReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .hero-title .line { display: block; }
+        .hero-title .line-gold .char { color: var(--gold); }
+        @keyframes charReveal { to { transform: translateY(0); } }
+
+        .hero-desc {
+            font-size: clamp(1rem, 1.8vw, 1.2rem); color: var(--text-dim);
+            max-width: 550px; margin: 0 auto 3rem; line-height: 1.8;
+            opacity: 0; animation: fadeUp 0.8s 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .hero-actions {
+            display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+            opacity: 0; animation: fadeUp 0.8s 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.6rem;
+            padding: 1rem 2.2rem; border-radius: 12px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 0.95rem; font-weight: 700; text-decoration: none;
+            border: none; cursor: none;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden;
+        }
+        .btn-gold { background: var(--gold); color: var(--bg); }
+        .btn-gold::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%); transition: transform 0.6s;
+        }
+        .btn-gold:hover::before { transform: translateX(100%); }
+        .btn-gold:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px rgba(212, 168, 67, 0.35), 0 0 0 1px rgba(212, 168, 67, 0.3);
+        }
+        .btn-ghost {
+            background: rgba(255,255,255,0.06); color: var(--text);
+            border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+        }
+        .btn-ghost:hover {
+            border-color: var(--gold); color: var(--gold);
+            background: rgba(212, 168, 67, 0.08); transform: translateY(-3px);
+        }
+
+        /* ===== SECTIONS ===== */
+        .section { padding: 7rem 2rem; position: relative; }
+        .section-dark { background: var(--bg-alt); }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section-header { margin-bottom: 4rem; }
+        .section-tag {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 3px; color: var(--gold); margin-bottom: 1.2rem;
+        }
+        .section-tag::before { content: ''; width: 20px; height: 2px; background: var(--gold); }
+        .section-title {
+            font-size: clamp(2rem, 4.5vw, 3.2rem); font-weight: 900;
+            letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 1.2rem;
+        }
+        .section-title .gold { color: var(--gold); }
+        .section-desc { font-size: 1.05rem; color: var(--text-dim); max-width: 550px; line-height: 1.7; }
+        .text-center { text-align: center; }
+        .text-center .section-desc { margin: 0 auto; }
+        .text-center .section-tag::before { display: none; }
+        .text-center .section-tag::after { content: ''; width: 20px; height: 2px; background: var(--gold); }
+        .section-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+
+        /* ===== REVEALS ===== */
+        .reveal { opacity: 0; transform: translateY(50px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-left { opacity: 0; transform: translateX(-60px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal-left.visible { opacity: 1; transform: translateX(0); }
+        .reveal-right { opacity: 0; transform: translateX(60px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal-right.visible { opacity: 1; transform: translateX(0); }
+        .reveal-scale { opacity: 0; transform: scale(0.85); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal-scale.visible { opacity: 1; transform: scale(1); }
+        .stagger-1 { transition-delay: 0.1s; }
+        .stagger-2 { transition-delay: 0.2s; }
+        .stagger-3 { transition-delay: 0.3s; }
+        .stagger-4 { transition-delay: 0.4s; }
+        .stagger-5 { transition-delay: 0.5s; }
+        .stagger-6 { transition-delay: 0.6s; }
+
+        /* ===== FUSION ===== */
+        .fusion-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+        .fusion-visual { position: relative; height: 420px; display: flex; align-items: center; justify-content: center; }
+        .fusion-ring { position: absolute; border-radius: 50%; border: 1px solid var(--border); animation: ringRotate 30s linear infinite; }
+        .fusion-ring:nth-child(1) { width: 380px; height: 380px; }
+        .fusion-ring:nth-child(2) { width: 300px; height: 300px; border-style: dashed; animation-direction: reverse; animation-duration: 25s; }
+        .fusion-ring:nth-child(3) { width: 220px; height: 220px; animation-duration: 20s; }
+        @keyframes ringRotate { to { transform: rotate(360deg); } }
+        .fusion-ring .ring-dot { position: absolute; width: 8px; height: 8px; background: var(--gold); border-radius: 50%; box-shadow: 0 0 12px var(--glow-strong); }
+        .fusion-ring:nth-child(1) .ring-dot { top: -4px; left: 50%; }
+        .fusion-ring:nth-child(2) .ring-dot { bottom: -4px; right: 20%; }
+        .fusion-ring:nth-child(3) .ring-dot { top: 50%; left: -4px; }
+        .fusion-center-badge { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .fusion-icon-circle {
+            width: 100px; height: 100px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 60px rgba(212, 168, 67, 0.25);
+            animation: fusionGlow 3s ease-in-out infinite; margin-bottom: 1.5rem;
+        }
+        @keyframes fusionGlow {
+            0%, 100% { box-shadow: 0 0 40px rgba(212, 168, 67, 0.2); }
+            50% { box-shadow: 0 0 80px rgba(212, 168, 67, 0.4); }
+        }
+        .fusion-icon-circle svg { width: 44px; height: 44px; }
+        .fusion-labels { display: flex; gap: 1.5rem; align-items: center; }
+        .fusion-label { text-align: center; }
+        .fusion-label-name { font-size: 0.95rem; font-weight: 800; color: var(--text); margin-bottom: 0.15rem; }
+        .fusion-label-sub { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .fusion-label-divider { font-size: 1.5rem; color: var(--gold); font-weight: 300; }
+
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 5rem; }
+        .stat-item {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 2rem 1.5rem; text-align: center;
+            position: relative; overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-item::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: 0; transition: opacity 0.4s;
+        }
+        .stat-item:hover { border-color: var(--border-hover); transform: translateY(-5px); background: var(--bg-card-hover); }
+        .stat-item:hover::before { opacity: 1; }
+        .stat-val { font-size: 2.8rem; font-weight: 900; color: var(--gold); line-height: 1; margin-bottom: 0.5rem; }
+        .stat-lbl { font-size: 0.8rem; color: var(--text-dim); font-weight: 600; }
+
+        /* ===== TEAMS ===== */
+        .teams-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .team-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 2rem; position: relative; overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .team-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(212, 168, 67, 0.08), transparent 60%);
+            opacity: 0; transition: opacity 0.5s;
+        }
+        .team-card:hover::before { opacity: 1; }
+        .team-card:hover {
+            border-color: var(--border-hover); transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 30px var(--glow);
+        }
+        .team-icon {
+            width: 50px; height: 50px; border-radius: 14px;
+            background: rgba(212, 168, 67, 0.08); border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1.2rem; transition: all 0.4s; color: var(--gold);
+        }
+        .team-icon svg { width: 24px; height: 24px; }
+        .team-card:hover .team-icon {
+            background: rgba(212, 168, 67, 0.15); border-color: rgba(212, 168, 67, 0.3);
+            transform: scale(1.1) rotate(-5deg);
+        }
+        .team-name { font-size: 1.15rem; font-weight: 800; margin-bottom: 0.3rem; }
+        .team-league { font-size: 0.78rem; color: var(--gold); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.8rem; }
+        .team-desc { color: var(--text-dim); font-size: 0.88rem; line-height: 1.6; }
+        .team-tag {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            margin-top: 1rem; padding: 0.3rem 0.8rem;
+            background: rgba(212, 168, 67, 0.08); border: 1px solid rgba(212, 168, 67, 0.15);
+            border-radius: 6px; font-size: 0.7rem; font-weight: 700;
+            color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .team-tag::before { content: ''; width: 5px; height: 5px; background: var(--gold); border-radius: 50%; }
+
+        /* ===== SPIELPLAN ===== */
+        .matches-list { display: flex; flex-direction: column; gap: 1rem; }
+        .match-row {
+            display: grid; grid-template-columns: 100px 1fr auto;
+            gap: 2rem; align-items: center;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 1.5rem 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden;
+        }
+        .match-row::after {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+            width: 3px; background: var(--gold);
+            transform: scaleY(0); transition: transform 0.4s; transform-origin: bottom;
+        }
+        .match-row:hover { border-color: var(--border-hover); transform: translateX(6px); background: var(--bg-card-hover); }
+        .match-row:hover::after { transform: scaleY(1); }
+        .match-date { text-align: center; }
+        .match-date-day { font-size: 1.8rem; font-weight: 900; color: var(--gold); line-height: 1; }
+        .match-date-month { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+        .match-info h4 { font-size: 1.05rem; font-weight: 800; margin-bottom: 0.3rem; }
+        .match-meta { font-size: 0.82rem; color: var(--text-dim); display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .match-meta-item { display: inline-flex; align-items: center; gap: 0.35rem; }
+        .match-meta-item svg { width: 14px; height: 14px; color: var(--gold); flex-shrink: 0; }
+        .match-time {
+            font-size: 0.9rem; font-weight: 700; color: var(--text);
+            background: rgba(212, 168, 67, 0.08); padding: 0.4rem 1rem;
+            border-radius: 8px; border: 1px solid var(--border);
+        }
+
+        /* ===== TIMELINE ===== */
+        .timeline-wrap { position: relative; max-width: 700px; margin: 0 auto; padding-left: 60px; }
+        .timeline-wrap::before {
+            content: ''; position: absolute; left: 24px; top: 0; bottom: 0; width: 2px;
+            background: linear-gradient(to bottom, var(--gold), var(--border), var(--gold));
+        }
+        .timeline-entry { position: relative; margin-bottom: 3rem; padding-left: 2rem; }
+        .timeline-dot {
+            position: absolute; left: -36px; top: 4px; width: 14px; height: 14px;
+            border-radius: 50%; background: var(--gold); border: 3px solid var(--bg); z-index: 2;
+            transition: all 0.4s; box-shadow: 0 0 0 4px rgba(212, 168, 67, 0.15);
+        }
+        .timeline-entry:hover .timeline-dot { box-shadow: 0 0 0 8px rgba(212, 168, 67, 0.2); transform: scale(1.2); }
+        .timeline-year { font-size: 0.75rem; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem; }
+        .timeline-title { font-size: 1.15rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .timeline-text { color: var(--text-dim); font-size: 0.9rem; line-height: 1.7; }
+
+        /* ===== WERTE ===== */
+        .values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .value-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 2.5rem 2rem; text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden;
+        }
+        .value-card::after {
+            content: ''; position: absolute; bottom: 0; left: 50%;
+            transform: translateX(-50%); width: 0; height: 2px;
+            background: var(--gold); transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .value-card:hover { border-color: var(--border-hover); transform: translateY(-8px); }
+        .value-card:hover::after { width: 60%; }
+        .value-icon {
+            width: 56px; height: 56px; border-radius: 16px;
+            background: rgba(212, 168, 67, 0.08); border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.2rem; color: var(--gold);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .value-icon svg { width: 26px; height: 26px; }
+        .value-card:hover .value-icon { transform: scale(1.15) rotate(-5deg); background: rgba(212, 168, 67, 0.15); border-color: var(--border-hover); }
+        .value-card h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.6rem; }
+        .value-card p { color: var(--text-dim); font-size: 0.88rem; line-height: 1.7; }
+
+        /* ===== CTA ===== */
+        .cta-box {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 5rem 3rem; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .cta-box::before {
+            content: ''; position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(212, 168, 67, 0.05), transparent, rgba(212, 168, 67, 0.03), transparent);
+            animation: ctaRotate 15s linear infinite;
+        }
+        @keyframes ctaRotate { to { transform: rotate(360deg); } }
+        .cta-box > * { position: relative; z-index: 1; }
+        .cta-box h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 1rem; }
+        .cta-box p { color: var(--text-dim); font-size: 1.1rem; max-width: 480px; margin: 0 auto 2.5rem; line-height: 1.7; }
+        .cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+        /* ===== FOOTER ===== */
+        .footer { padding: 4rem 2rem 1.5rem; border-top: 1px solid var(--border); }
+        .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; }
+        .footer-brand-text { color: var(--text-dim); font-size: 0.85rem; line-height: 1.7; margin-top: 1rem; max-width: 280px; }
+        .footer h5 { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--gold); margin-bottom: 1.2rem; }
+        .footer ul { list-style: none; }
+        .footer ul li { margin-bottom: 0.6rem; }
+        .footer ul a { color: var(--text-dim); text-decoration: none; font-size: 0.85rem; transition: all 0.3s; padding-left: 0; }
+        .footer ul a:hover { color: var(--gold); padding-left: 8px; }
+        .footer-bottom {
+            max-width: 1200px; margin: 3rem auto 0; padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+        }
+        .footer-copy { color: var(--text-muted); font-size: 0.75rem; }
+        .footer-socials { display: flex; gap: 0.5rem; }
+        .footer-socials a {
+            width: 38px; height: 38px; border-radius: 10px;
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-dim); text-decoration: none; transition: all 0.3s;
+        }
+        .footer-socials a:hover { border-color: var(--gold); color: var(--gold); background: rgba(212, 168, 67, 0.08); transform: translateY(-3px); }
+        .footer-socials svg { width: 16px; height: 16px; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .fusion-layout { grid-template-columns: 1fr; gap: 3rem; }
+            .fusion-visual { height: 320px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .teams-grid { grid-template-columns: repeat(2, 1fr); }
+            .values-grid { grid-template-columns: repeat(2, 1fr); }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            body { cursor: auto; }
+            .cursor, .cursor-dot { display: none; }
+            .navbar { padding: 0.8rem 1.5rem; }
+            .navbar.scrolled { padding: 0.6rem 1.5rem; }
+            .nav-menu {
+                display: none; position: fixed; inset: 0;
+                background: rgba(11, 15, 20, 0.98); backdrop-filter: blur(30px);
+                flex-direction: column; justify-content: center; align-items: center;
+                gap: 1.5rem; z-index: 999;
+            }
+            .nav-menu.open { display: flex; }
+            .nav-menu a { font-size: 1.2rem; }
+            .mobile-toggle { display: flex; align-items: center; justify-content: center; z-index: 1000; }
+            .hero-title { letter-spacing: -1.5px; }
+            .teams-grid { grid-template-columns: 1fr; }
+            .values-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .match-row { grid-template-columns: 70px 1fr; gap: 1rem; }
+            .match-time { display: none; }
+            .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .cta-box { padding: 3rem 1.5rem; }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .hero-actions { flex-direction: column; align-items: center; }
+            .cta-actions { flex-direction: column; align-items: center; }
+            .hero { padding: 5rem 1rem 2rem; }
+            .section { padding: 4rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Preloader -->
+    <div class="preloader" id="preloader">
+        <div class="preloader-ball"></div>
+        <div class="preloader-text">Laden...</div>
+    </div>
+
+    <!-- Custom cursor -->
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-dot" id="cursorDot"></div>
+
+    <!-- Scroll progress -->
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar" id="navbar">
+        <a href="#" class="nav-brand">
+            <div class="nav-brand-mark"><span>VSN</span></div>
+            <div class="nav-brand-name"><span class="gold">Volley</span> Sempach-Neuenkirch</div>
+        </a>
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="#">Start</a></li>
+            <li><a href="#fusion">Fusion</a></li>
+            <li><a href="#teams">Teams</a></li>
+            <li><a href="#spielplan">Spielplan</a></li>
+            <li><a href="#kontakt" class="nav-cta-btn">Kontakt</a></li>
+        </ul>
+        <button class="mobile-toggle" id="mobileToggle" aria-label="Menü">
+            <span id="toggleIcon">&#9776;</span>
+        </button>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero" id="hero">
+        <div class="hero-image"></div>
+
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="live-dot"></span>
+                Saison 2026 &mdash; Zwei Vereine, ein Team
+            </div>
+
+            <h1 class="hero-title" id="heroTitle">
+                <span class="line"><span class="gold-text">Volley</span> Sempach&#8209;Neuenkirch</span>
+            </h1>
+
+            <p class="hero-desc">
+                Zwei Dörfer. Eine Leidenschaft. Ein Verein.<br>
+                Volley Sempach und VB Neuenkirch, vereint im Volleyball.
+            </p>
+
+            <div class="hero-actions">
+                <a href="#fusion" class="btn btn-gold">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                    Mehr erfahren
+                </a>
+                <a href="#spielplan" class="btn btn-ghost">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    Spielplan ansehen
+                </a>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- FUSION -->
+    <div class="section-divider"></div>
+    <section class="section" id="fusion">
+        <div class="container">
+            <div class="fusion-layout">
+                <div>
+                    <div class="section-header reveal">
+                        <div class="section-tag">Die Fusion</div>
+                        <h2 class="section-title">Stärker <span class="gold">zusammen</span></h2>
+                        <p class="section-desc">
+                            Zwei traditionsreiche Volleyballvereine aus der Region Sempachersee
+                            vereinen ihre Kräfte zu einem Verein. Mehr Spielerinnen, mehr Teams,
+                            mehr Leidenschaft &mdash; eine gemeinsame Zukunft.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="fusion-visual reveal-scale">
+                    <div class="fusion-ring"><span class="ring-dot"></span></div>
+                    <div class="fusion-ring"><span class="ring-dot"></span></div>
+                    <div class="fusion-ring"><span class="ring-dot"></span></div>
+                    <div class="fusion-center-badge">
+                        <div class="fusion-icon-circle">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#0b0f14" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M2 12h20"/>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/>
+                            </svg>
+                        </div>
+                        <div class="fusion-labels">
+                            <div class="fusion-label">
+                                <div class="fusion-label-name">Sempach</div>
+                                <div class="fusion-label-sub">Volley Sempach</div>
+                            </div>
+                            <div class="fusion-label-divider">&times;</div>
+                            <div class="fusion-label">
+                                <div class="fusion-label-name">Neuenkirch</div>
+                                <div class="fusion-label-sub">VB Neuenkirch</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-item reveal stagger-1">
+                    <div class="stat-val" data-target="2">0</div>
+                    <div class="stat-lbl">Vereinte Vereine</div>
+                </div>
+                <div class="stat-item reveal stagger-2">
+                    <div class="stat-val" data-target="8" data-suffix="+">0</div>
+                    <div class="stat-lbl">Teams</div>
+                </div>
+                <div class="stat-item reveal stagger-3">
+                    <div class="stat-val" data-target="150" data-suffix="+">0</div>
+                    <div class="stat-lbl">Aktive Mitglieder</div>
+                </div>
+                <div class="stat-item reveal stagger-4">
+                    <div class="stat-val" data-target="2">0</div>
+                    <div class="stat-lbl">Standorte</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TEAMS -->
+    <div class="section-divider"></div>
+    <section class="section section-dark" id="teams">
+        <div class="container">
+            <div class="section-header text-center reveal">
+                <div class="section-tag">Unsere Teams</div>
+                <h2 class="section-title">Volleyball für <span class="gold">alle</span></h2>
+                <p class="section-desc">
+                    Von den Juniorinnen bis zur 1. Liga &mdash; gemeinsam decken wir
+                    jede Altersklasse und jedes Spielniveau ab.
+                </p>
+            </div>
+
+            <div class="teams-grid">
+                <div class="team-card reveal stagger-1">
+                    <div class="team-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 9 7 12 7s5-3 7.5-3a2.5 2.5 0 0 1 0 5H18"/><path d="M18 15h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M6 15H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M6 9v6a6 6 0 0 0 12 0V9"/></svg>
+                    </div>
+                    <div class="team-name">Damen 1</div>
+                    <div class="team-league">1. Liga &middot; Swiss Volley</div>
+                    <div class="team-desc">Unser Flaggschiff. Ambitionierte Spielerinnen aus beiden Dörfern kämpfen um den Aufstieg.</div>
+                    <div class="team-tag">Fusion-Team</div>
+                </div>
+
+                <div class="team-card reveal stagger-2">
+                    <div class="team-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                    </div>
+                    <div class="team-name">Damen 2</div>
+                    <div class="team-league">3. Liga</div>
+                    <div class="team-desc">Kompetitives Volleyball mit starkem Teamgeist. Der ideale Einstieg in den Wettkampf.</div>
+                    <div class="team-tag">Fusion-Team</div>
+                </div>
+
+                <div class="team-card reveal stagger-3">
+                    <div class="team-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    </div>
+                    <div class="team-name">Herren</div>
+                    <div class="team-league">4. Liga</div>
+                    <div class="team-desc">Motivierte Mannschaft mit Aufstiegsambitionen. Training in Sempach und Neuenkirch.</div>
+                    <div class="team-tag">Fusion-Team</div>
+                </div>
+
+                <div class="team-card reveal stagger-1">
+                    <div class="team-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </div>
+                    <div class="team-name">Juniorinnen U23</div>
+                    <div class="team-league">2. Liga</div>
+                    <div class="team-desc">Die Zukunft des Vereins. Talentierte Spielerinnen auf dem Weg in die 1. Liga.</div>
+                    <div class="team-tag">Fusion-Team</div>
+                </div>
+
+                <div class="team-card reveal stagger-2">
+                    <div class="team-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div class="team-name">Junioren U19 / U15</div>
+                    <div class="team-league">Nachwuchs</div>
+                    <div class="team-desc">Gezielte Förderung mit erfahrenen Trainerinnen. Vom Grundlagenkurs bis zur Liga.</div>
+                    <div class="team-tag">Fusion-Team</div>
+                </div>
+
+                <div class="team-card reveal stagger-3">
+                    <div class="team-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                    </div>
+                    <div class="team-name">Mixed / Plausch</div>
+                    <div class="team-league">Freizeitvolleyball</div>
+                    <div class="team-desc">Spass am Spiel ohne Leistungsdruck. Offen für alle, die Volleyball lieben.</div>
+                    <div class="team-tag">Offen für alle</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SPIELPLAN -->
+    <div class="section-divider"></div>
+    <section class="section" id="spielplan">
+        <div class="container">
+            <div class="section-header reveal">
+                <div class="section-tag">Spielplan</div>
+                <h2 class="section-title">Nächste <span class="gold">Spiele</span></h2>
+                <p class="section-desc">
+                    Komm vorbei und unterstütze unsere Teams. Jeder Punkt zählt!
+                </p>
+            </div>
+
+            <div class="matches-list">
+                <div class="match-row reveal stagger-1">
+                    <div class="match-date">
+                        <div class="match-date-day">15</div>
+                        <div class="match-date-month">Mär</div>
+                    </div>
+                    <div class="match-info">
+                        <h4>VSN Damen 1 vs. Volley Luzern</h4>
+                        <div class="match-meta">
+                            <span class="match-meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                Sporthalle Sempach
+                            </span>
+                            <span class="match-meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+                                1. Liga
+                            </span>
+                        </div>
+                    </div>
+                    <div class="match-time">20:00</div>
+                </div>
+
+                <div class="match-row reveal stagger-2">
+                    <div class="match-date">
+                        <div class="match-date-day">22</div>
+                        <div class="match-date-month">Mär</div>
+                    </div>
+                    <div class="match-info">
+                        <h4>VSN Herren vs. TV Willisau</h4>
+                        <div class="match-meta">
+                            <span class="match-meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                Sporthalle Grünau, Neuenkirch
+                            </span>
+                            <span class="match-meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+                                4. Liga
+                            </span>
+                        </div>
+                    </div>
+                    <div class="match-time">19:30</div>
+                </div>
+
+                <div class="match-row reveal stagger-3">
+                    <div class="match-date">
+                        <div class="match-date-day">29</div>
+                        <div class="match-date-month">Mär</div>
+                    </div>
+                    <div class="match-info">
+                        <h4>VSN Damen 2 vs. VB Therwil</h4>
+                        <div class="match-meta">
+                            <span class="match-meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                Sporthalle Sempach
+                            </span>
+                            <span class="match-meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+                                3. Liga
+                            </span>
+                        </div>
+                    </div>
+                    <div class="match-time">18:00</div>
+                </div>
+
+                <div class="match-row reveal stagger-4">
+                    <div class="match-date">
+                        <div class="match-date-day">05</div>
+                        <div class="match-date-month">Apr</div>
+                    </div>
+                    <div class="match-info">
+                        <h4>VSN U23 vs. Volley Region Entlebuch</h4>
+                        <div class="match-meta">
+                            <span class="match-meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                Sporthalle Grünau, Neuenkirch
+                            </span>
+                            <span class="match-meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+                                2. Liga
+                            </span>
+                        </div>
+                    </div>
+                    <div class="match-time">17:00</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WERTE -->
+    <div class="section-divider"></div>
+    <section class="section" id="werte">
+        <div class="container">
+            <div class="section-header text-center reveal">
+                <div class="section-tag">Unsere Werte</div>
+                <h2 class="section-title">Was uns <span class="gold">antreibt</span></h2>
+                <p class="section-desc">
+                    Die Grundpfeiler unseres neuen, vereinten Vereins.
+                </p>
+            </div>
+
+            <div class="values-grid">
+                <div class="value-card reveal stagger-1">
+                    <div class="value-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <h3>Gemeinschaft</h3>
+                    <p>Zwei Dörfer, ein Team. Zusammenhalt über Gemeindegrenzen hinweg.</p>
+                </div>
+                <div class="value-card reveal stagger-2">
+                    <div class="value-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    </div>
+                    <h3>Nachwuchs</h3>
+                    <p>Mit vereinten Kräften bessere Ausbildung und mehr Möglichkeiten für die Jugend.</p>
+                </div>
+                <div class="value-card reveal stagger-3">
+                    <div class="value-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </div>
+                    <h3>Leidenschaft</h3>
+                    <p>Volleyball ist Emotion, Einsatz und der Wille, gemeinsam zu wachsen.</p>
+                </div>
+                <div class="value-card reveal stagger-1">
+                    <div class="value-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    </div>
+                    <h3>Ambition</h3>
+                    <p>Höhere Ligen, stärkere Teams, grössere Ziele. Zusammen erreichen wir mehr.</p>
+                </div>
+                <div class="value-card reveal stagger-2">
+                    <div class="value-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    </div>
+                    <h3>Regionalität</h3>
+                    <p>Verwurzelt in Sempach und Neuenkirch. Unser Verein für die ganze Region.</p>
+                </div>
+                <div class="value-card reveal stagger-3">
+                    <div class="value-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    </div>
+                    <h3>Spass am Spiel</h3>
+                    <p>Ob Wettkampf oder Plausch &mdash; bei uns hat jeder Platz, der Volleyball liebt.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <div class="section-divider"></div>
+    <section class="section section-dark" id="kontakt">
+        <div class="container">
+            <div class="cta-box reveal-scale">
+                <div class="section-tag" style="justify-content: center;">Sei dabei</div>
+                <h2>Werde Teil von <span class="gold">VSN</span></h2>
+                <p>
+                    Ob erfahrene Spielerin oder kompletter Anfänger &mdash;
+                    bei Volley Sempach-Neuenkirch ist jeder willkommen.
+                </p>
+                <div class="cta-actions">
+                    <a href="mailto:info@volley-sempach-neuenkirch.ch" class="btn btn-gold">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        Kontakt aufnehmen
+                    </a>
+                    <a href="#teams" class="btn btn-ghost">
+                        Teams ansehen
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <a href="#" class="nav-brand" style="margin-bottom: 0.5rem; display: inline-flex;">
+                    <div class="nav-brand-mark"><span>VSN</span></div>
+                    <div class="nav-brand-name"><span class="gold">Volley</span> Sempach-Neuenkirch</div>
+                </a>
+                <p class="footer-brand-text">
+                    Der vereinte Volleyballverein der Region Sempachersee.
+                    Gemeinsam am Netz seit 2026.
+                </p>
+            </div>
+            <div>
+                <h5>Verein</h5>
+                <ul>
+                    <li><a href="#fusion">Die Fusion</a></li>
+                    <li><a href="#teams">Teams</a></li>
+                    <li><a href="#spielplan">Spielplan</a></li>
+                    <li><a href="#werte">Werte</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5>Standorte</h5>
+                <ul>
+                    <li><a href="#">Sporthalle Sempach</a></li>
+                    <li><a href="#">Sporthalle Grünau</a></li>
+                    <li><a href="#">Trainingszeiten</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5>Kontakt</h5>
+                <ul>
+                    <li><a href="mailto:info@volley-sempach-neuenkirch.ch">info@volley-sempach-neuenkirch.ch</a></li>
+                    <li><a href="#">Vorstand</a></li>
+                    <li><a href="#">Impressum</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p class="footer-copy">&copy; 2026 Volley Sempach-Neuenkirch. Alle Rechte vorbehalten.</p>
+            <div class="footer-socials">
+                <a href="#" aria-label="Instagram">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                </a>
+                <a href="#" aria-label="Facebook">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // Preloader
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('preloader').classList.add('hidden');
+                animateHeroTitle();
+            }, 800);
+        });
+
+        // Hero title char animation
+        function animateHeroTitle() {
+            const title = document.getElementById('heroTitle');
+            const lines = title.querySelectorAll('.line');
+            let charIndex = 0;
+            lines.forEach(line => {
+                const text = line.textContent;
+                const isGold = line.classList.contains('line-gold');
+                line.textContent = '';
+                text.split('').forEach(char => {
+                    const span = document.createElement('span');
+                    span.classList.add('word');
+                    const inner = document.createElement('span');
+                    inner.classList.add('char');
+                    if (isGold) inner.style.color = 'var(--gold)';
+                    inner.textContent = char === ' ' ? '\u00A0' : char;
+                    inner.style.animationDelay = (0.6 + charIndex * 0.035) + 's';
+                    span.appendChild(inner);
+                    line.appendChild(span);
+                    charIndex++;
+                });
+            });
+        }
+
+        // Custom Cursor
+        const cursor = document.getElementById('cursor');
+        const cursorDot = document.getElementById('cursorDot');
+        if (window.innerWidth > 768) {
+            let cx = 0, cy = 0, dx = 0, dy = 0;
+            document.addEventListener('mousemove', e => {
+                dx = e.clientX; dy = e.clientY;
+                cursorDot.style.left = dx + 'px'; cursorDot.style.top = dy + 'px';
+            });
+            function animateCursor() {
+                cx += (dx - cx) * 0.12; cy += (dy - cy) * 0.12;
+                cursor.style.left = cx + 'px'; cursor.style.top = cy + 'px';
+                requestAnimationFrame(animateCursor);
+            }
+            animateCursor();
+            document.querySelectorAll('a, button, .team-card, .stat-item, .value-card, .match-row').forEach(el => {
+                el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+                el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+            });
+        }
+
+        // Scroll Progress
+        const progress = document.getElementById('scrollProgress');
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement.scrollHeight - window.innerHeight;
+            progress.style.width = (window.scrollY / h) * 100 + '%';
+        });
+
+        // Navbar
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => { navbar.classList.toggle('scrolled', window.scrollY > 60); });
+
+        // Mobile menu
+        const mobileToggle = document.getElementById('mobileToggle');
+        const navMenu = document.getElementById('navMenu');
+        const toggleIcon = document.getElementById('toggleIcon');
+        mobileToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('open');
+            toggleIcon.innerHTML = navMenu.classList.contains('open') ? '&#10005;' : '&#9776;';
+        });
+        navMenu.querySelectorAll('a').forEach(a => {
+            a.addEventListener('click', () => { navMenu.classList.remove('open'); toggleIcon.innerHTML = '&#9776;'; });
+        });
+
+        // Scroll Reveal
+        const allRevealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+        const revealObs = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+        }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+        allRevealEls.forEach(el => revealObs.observe(el));
+
+        // Counter Animation
+        const counters = document.querySelectorAll('.stat-val[data-target]');
+        const counterObs = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+                    const target = parseInt(el.dataset.target);
+                    const suffix = el.dataset.suffix || '';
+                    const duration = 1500; const start = performance.now();
+                    function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+                    function update(now) {
+                        const p = Math.min((now - start) / duration, 1);
+                        el.textContent = Math.round(easeOut(p) * target) + suffix;
+                        if (p < 1) requestAnimationFrame(update);
+                    }
+                    requestAnimationFrame(update);
+                    counterObs.unobserve(el);
+                }
+            });
+        }, { threshold: 0.5 });
+        counters.forEach(el => counterObs.observe(el));
+
+        // Team Card Mouse Glow
+        document.querySelectorAll('.team-card').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                card.style.setProperty('--mx', ((e.clientX - rect.left) / rect.width * 100) + '%');
+                card.style.setProperty('--my', ((e.clientY - rect.top) / rect.height * 100) + '%');
+            });
+        });
+
+        // Parallax Orbs
+        if (window.innerWidth > 768) {
+            window.addEventListener('mousemove', e => {
+                const mx = (e.clientX / window.innerWidth - 0.5) * 2;
+                const my = (e.clientY / window.innerHeight - 0.5) * 2;
+                document.querySelectorAll('.hero-orb').forEach((orb, i) => {
+                    const f = (i + 1) * 15;
+                    orb.style.transform = `translate(${mx * f}px, ${my * f}px)`;
+                });
+            });
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', function(e) {
+                e.preventDefault();
+                const t = document.querySelector(this.getAttribute('href'));
+                if (t) window.scrollTo({ top: t.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
+            });
+        });
+    })();
+    </script>
+
+</body>
+</html>
